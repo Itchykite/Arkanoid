@@ -1,1 +1,0 @@
-clang++ -Wl,--dependency-file=CMakeFiles/Arkanoid.dir/link.d CMakeFiles/Arkanoid.dir/src/Ball.cpp.o CMakeFiles/Arkanoid.dir/src/Player.cpp.o CMakeFiles/Arkanoid.dir/src/Settings.cpp.o CMakeFiles/Arkanoid.dir/src/main.cpp.o -o Arkanoid  -lSDL2 -lSDL2_ttf -lSDL2 -lSDL2_image -lSDL2 -lSDL2_gfx -lSDL2_ttf -lSDL2_image -lSDL2_gfx

@@ -10,20 +10,22 @@ private:
     int y;         
     int radius;   
     Uint32 color;
-    float velocityX = 0.0f;
-    float velocityY = 0.0f;
+    float velocityX = 500.0f;
+    float velocityY = 500.0f;
 
 public:
     Ball(int x, int y, int radius, Uint32 color);
     ~Ball();
 
     void draw(SDL_Renderer* renderer) const;
-    void move(float deltaTime, float dx, float dy);
+    void move(float deltaTime, float dx, float dy, SDL_Rect playerRect, bool& isCatched);
 
+    SDL_Rect getRect() const; 
     int getX() const { return x; }
     int getY() const { return y; }
     int getRadius() const { return radius; }
-    SDL_Rect getRect() const { return rect; }
+    float getVelocityX() const { return velocityX; }
+    float getVelocityY() const { return velocityY; }
 
     void setPosition(int newX, int newY);
     void setVelocity(float dx, float dy); 

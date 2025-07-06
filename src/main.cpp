@@ -2,9 +2,12 @@
 #include <SDL2/SDL2_gfxPrimitives.h>
 #include <SDL2/SDL_video.h>
 
+#include <string>
+
 #include "Settings.hpp"
 #include "Player.hpp"
 #include "Ball.hpp"
+#include "Level.hpp"
 
 SDL_Window* window = nullptr;
 SDL_Renderer* renderer = nullptr;
@@ -13,6 +16,7 @@ bool isCatched = false;
 
 Player* player = nullptr;
 Ball* ball = nullptr;
+Level* level = nullptr;
 
 bool initSDL()
 {
@@ -22,33 +26,52 @@ bool initSDL()
         return false;
     }
 
+    SDL_Log("Creating window...");
     window = SDL_CreateWindow("SDL2 Window", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, WINDOW_WIDTH, WINDOW_HEIGHT, SDL_WINDOW_SHOWN | SDL_WINDOW_BORDERLESS);
     if(!window)
     {
         SDL_Log("Window could not be created! SDL_Error: %s", SDL_GetError());
         return false;
     }
+    SDL_Log("SUCCESS!");
 
+    SDL_Log("Creating renderer...");
     renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
     if(!renderer)
     {
         SDL_Log("Renderer could not be created! SDL_Error: %s", SDL_GetError());
         return false;
     }
+    SDL_Log("SUCCESS!");
 
+    SDL_Log("Creating player...");
     player = new Player(0, 1, 3, SDL_Rect{WINDOW_WIDTH / 2 - 150, WINDOW_HEIGHT - 20, 300, 20});
     if(!player)
     {
         printf("Failed to create player object.\n");
         return false;
     }
+    SDL_Log("SUCCESS!");
 
-    ball = new Ball(WINDOW_WIDTH / 2, WINDOW_HEIGHT + 20, 10, 0xFFFFFFFF);
+    SDL_Log("Creating ball");
+    ball = new Ball(WINDOW_WIDTH / 2, WINDOW_HEIGHT - 28, 10, 0xFFFFFFFF);
     if(!ball)
     {
         printf("Failed to create ball object.\n");
         return false;
     }
+    SDL_Log("SUCCESS!");
+
+    SDL_Log("Creating level...");
+    level = new Level(1);
+    if(!level)
+    {
+        printf("Failed to create level object.\n");
+        return false;
+    }
+    SDL_Log("SUCCESS!\n");
+
+    SDL_Log("Everything initialized");
 
     return true;
 }
@@ -82,6 +105,33 @@ void collisionDetection()
     {
         isCatched = true;
     }
+    else 
+    {
+        isCatched = false;
+    }
+}
+
+void handleMovement(float deltaTime) 
+{
+    const Uint8* keystates = SDL_GetKeyboardState(nullptr);
+
+    if(keystates[SDL_SCANCODE_LEFT] || keystates[SDL_SCANCODE_A])
+    {
+        player->move(deltaTime, -300, 0);
+    }
+    else if(keystates[SDL_SCANCODE_RIGHT] || keystates[SDL_SCANCODE_D])
+    {
+        player->move(deltaTime, 350, 0);
+    }
+
+    if(keystates[SDL_SCANCODE_SPACE])
+    {
+        if(isCatched)
+        {
+            ball->setPosition(ball->getX(), ball->getY() - 5);
+            ball->setVelocity(0, -500); 
+        }
+    }
 }
 
 void loop()
@@ -99,48 +149,20 @@ void loop()
 
         handleEvents(deltaTime);
 
-        const Uint8* keystates = SDL_GetKeyboardState(nullptr);
-
-        if(keystates[SDL_SCANCODE_LEFT] || keystates[SDL_SCANCODE_A])
-        {
-            player->move(deltaTime, -200, 0);
-            if(isCatched)
-            {
-                ball->move(deltaTime, -200, 0);
-            }
-        }
-        else if(keystates[SDL_SCANCODE_RIGHT] || keystates[SDL_SCANCODE_D])
-        {
-            player->move(deltaTime, 250, 0);
-            if(isCatched)
-            {
-                ball->move(deltaTime, 250, 0);
-            }
-        }
-
-        if(keystates[SDL_SCANCODE_SPACE])
-        {
-            if(isCatched)
-            {
-                isCatched = false;
-                ball->setPosition(player->getRect().x + player->getRect().w / 2, player->getRect().y - ball->getRadius());
-                ball->setVelocity(0, -500); 
-            }
-            else
-            {
-                ball->setPosition(WINDOW_WIDTH / 2, WINDOW_HEIGHT + 20);
-                ball->setVelocity(0, 0);
-            }
-        }
+        handleMovement(deltaTime);
 
         collisionDetection();
 
         SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
         SDL_RenderClear(renderer);
 
+        level->draw(renderer);
+        level->removeBrick(ball->getRect(), *&ball, ball->getRect());
+
         player->render(renderer);
         ball->draw(renderer);
-    
+        ball->move(deltaTime, 0, 0, player->getRect(), isCatched);
+
         SDL_RenderPresent(renderer);
     }
 }

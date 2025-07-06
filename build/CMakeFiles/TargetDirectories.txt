@@ -1,3 +1,0 @@
-/home/kacper/cpp/Arkanoid/build/CMakeFiles/Arkanoid.dir
-/home/kacper/cpp/Arkanoid/build/CMakeFiles/edit_cache.dir
-/home/kacper/cpp/Arkanoid/build/CMakeFiles/rebuild_cache.dir
