@@ -1,6 +1,9 @@
 #include "Level.hpp"
 #include "Ball.hpp"
 #include "Settings.hpp"
+#include "Player.hpp"
+
+int Level::levelNumber = 0;
 
 Uint32 generateColor()
 {
@@ -10,7 +13,7 @@ Uint32 generateColor()
     return (r << 16) | (g << 8) | b;
 }
 
-Level::Level(int levelNumber) 
+Level::Level() 
 {
     int rows = 5 + levelNumber;
     int cols = 10; 
@@ -60,7 +63,7 @@ void Level::reset(Ball*& ball)
     }
 
     bricks.clear();
-    int levelNumber = 1; 
+    levelNumber++;
     int rows = 5 + levelNumber;
     int cols = 10; 
     int spacingX = 8;
@@ -92,7 +95,7 @@ bool Level::isComplete() const
     return bricks.empty();
 }
 
-void Level::removeBrick(SDL_Rect ballRect, Ball*& ball, SDL_Rect playerRect) 
+void Level::removeBrick(SDL_Rect ballRect, Ball*& ball, SDL_Rect playerRect, Player*& player) 
 {
     for (auto it = bricks.begin(); it != bricks.end(); ) 
     {
@@ -100,7 +103,9 @@ void Level::removeBrick(SDL_Rect ballRect, Ball*& ball, SDL_Rect playerRect)
         if (SDL_HasIntersection(&ballRect, &brickRect)) 
         {
             it = bricks.erase(it);
-            
+         
+            Player::setBlocksBreaked(Player::getBlocksBreaked() + 1);
+
             if (ball) 
             {
                 int ballX = ball->getX();
@@ -123,7 +128,16 @@ void Level::removeBrick(SDL_Rect ballRect, Ball*& ball, SDL_Rect playerRect)
             }
 
             return; 
-        } 
+        }
+        
+        if(Player::getBlocksBreaked() == 5) 
+        {
+            Player::setBlocksBreaked(0);
+            player->setMoveLeft(player->getMoveLeft() * 1.05f);
+            player->setMoveRight(player->getMoveRight() * 1.05f);
+            ball->setVelocity(ball->getVelocityX() * 1.05f, ball->getVelocityY() * 1.05f);
+        }
+
         else 
         {
             ++it;

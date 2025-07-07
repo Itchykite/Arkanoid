@@ -1,7 +1,9 @@
 #include "Player.hpp"
 #include "Settings.hpp"
 
-Player::Player(int s, int l, int li, const SDL_Rect &r) : score(s), level(l), lives(li), rect(r) 
+int Player::blocksBreaked = 0;
+
+Player::Player(int l, int li, const SDL_Rect &r) : level(l), lives(li), rect(r) 
 {
     
 };
@@ -26,16 +28,6 @@ void Player::move(float deltaTime, float dx, float dy)
     if (rect.y < 0) { rect.y = 0; }
     if (rect.x + rect.w > WINDOW_WIDTH) { rect.x = WINDOW_WIDTH - rect.w; }
     if (rect.y + rect.h > WINDOW_HEIGHT) { rect.y = WINDOW_HEIGHT - rect.h; } 
-}
-
-int Player::getScore() const 
-{
-    return score;
-}
-
-void Player::setScore(int newScore) 
-{
-    score = newScore;
 }
 
 int Player::getLevel() const 

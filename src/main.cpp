@@ -1,6 +1,7 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL2_gfxPrimitives.h>
 #include <SDL2/SDL_video.h>
+#include <SDL2/SDL_ttf.h>
 
 #include <string>
 
@@ -13,6 +14,7 @@ SDL_Window* window = nullptr;
 SDL_Renderer* renderer = nullptr;
 bool isRunning = true;
 bool isCatched = false;
+TTF_Font* font = nullptr;
 
 Player* player = nullptr;
 Ball* ball = nullptr;
@@ -45,7 +47,7 @@ bool initSDL()
     SDL_Log("SUCCESS!");
 
     SDL_Log("Creating player...");
-    player = new Player(0, 1, 3, SDL_Rect{WINDOW_WIDTH / 2 - 150, WINDOW_HEIGHT - 20, 300, 20});
+    player = new Player(1, 3, SDL_Rect{WINDOW_WIDTH / 2 - 150, WINDOW_HEIGHT - 20, 300, 20});
     if(!player)
     {
         printf("Failed to create player object.\n");
@@ -63,13 +65,30 @@ bool initSDL()
     SDL_Log("SUCCESS!");
 
     SDL_Log("Creating level...");
-    level = new Level(1);
+    level = new Level();
     if(!level)
     {
         printf("Failed to create level object.\n");
         return false;
     }
     SDL_Log("SUCCESS!\n");
+
+    SDL_Log("Initializing TTF...");
+    if(TTF_Init() == -1)
+    {
+        SDL_Log("TTF could not initialize! TTF_Error: %s", TTF_GetError());
+        return false;
+    }
+    SDL_Log("SUCCESS!");
+
+    SDL_Log("Loading font...");
+    font = TTF_OpenFont("../fonts/roboto-bold.ttf", 24); 
+    if(!font)
+    {
+        SDL_Log("Failed to load font! TTF_Error: %s", TTF_GetError());
+        return false;
+    }
+    SDL_Log("SUCCESS!");
 
     SDL_Log("Everything initialized");
 
@@ -117,11 +136,11 @@ void handleMovement(float deltaTime)
 
     if(keystates[SDL_SCANCODE_LEFT] || keystates[SDL_SCANCODE_A])
     {
-        player->move(deltaTime, -300, 0);
+        player->move(deltaTime, -player->getMoveLeft(), 0);
     }
     else if(keystates[SDL_SCANCODE_RIGHT] || keystates[SDL_SCANCODE_D])
     {
-        player->move(deltaTime, 350, 0);
+        player->move(deltaTime, player->getMoveRight(), 0);
     }
 
     if(keystates[SDL_SCANCODE_SPACE])
@@ -131,6 +150,13 @@ void handleMovement(float deltaTime)
             ball->setPosition(ball->getX(), ball->getY() - 5);
             ball->setVelocity(0, -500); 
         }
+    }
+
+    if(keystates[SDL_SCANCODE_R])
+    {
+        level->reset(ball);
+        player->setLives(3);
+        isCatched = true;
     }
 }
 
@@ -147,6 +173,7 @@ void loop()
         lastTime = currentTime;
         if(deltaTime > 0.05f) deltaTime = 0.016f;
 
+
         handleEvents(deltaTime);
 
         handleMovement(deltaTime);
@@ -156,13 +183,17 @@ void loop()
         SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
         SDL_RenderClear(renderer);
 
+
         level->draw(renderer);
-        level->removeBrick(ball->getRect(), *&ball, ball->getRect());
+        level->removeBrick(ball->getRect(), *&ball, ball->getRect(), *&player);
 
         player->render(renderer);
         ball->draw(renderer);
         ball->move(deltaTime, 0, 0, player->getRect(), isCatched);
 
+        renderText(renderer, font, "Level: " + std::to_string(Level::getLevelNumber()), 10, 10);
+        renderText(renderer, font, "Broken bricks: " + std::to_string(player->getBlocksBreaked()), 10, 40);
+        
         SDL_RenderPresent(renderer);
     }
 }
@@ -193,6 +224,19 @@ void cleanupSDL()
         ball = nullptr;
     }
 
+    if(level)
+    {
+        delete level;
+        level = nullptr;
+    }
+
+    if(font)
+    {
+        TTF_CloseFont(font);
+        font = nullptr;
+    }
+
+    TTF_Quit();
     SDL_Quit();
 }
 
