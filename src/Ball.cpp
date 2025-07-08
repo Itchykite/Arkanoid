@@ -39,9 +39,9 @@ void Ball::move(float deltaTime, float dx, float dy, SDL_Rect playerRect, bool& 
         velocityY = -velocityY;
     }
 
-    if (y + radius + 2 > WINDOW_HEIGHT) 
+    if (y + radius > WINDOW_HEIGHT) 
     {
-        setPosition(playerRect.x + playerRect.w / 2, playerRect.y - radius + 2);
+        setPosition(playerRect.x + playerRect.w / 2, playerRect.y - radius + 5);
         player->setLives(player->getLives() - 1);
         isCatched = true;
     }
