@@ -6,14 +6,14 @@ class Player
 {
 private:
     int level;
-    int lives;
+    static int lives;
     float moveLeft = 300.0f;
     float moveRight = 350.0f;
     SDL_Rect rect;
     static int blocksBreaked;
 
 public:
-    Player(int l, int li, const SDL_Rect& r);
+    Player(int l, const SDL_Rect& r);
     ~Player();
 
     void render(SDL_Renderer* renderer);

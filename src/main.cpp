@@ -15,6 +15,8 @@ SDL_Renderer* renderer = nullptr;
 bool isRunning = true;
 bool isCatched = false;
 TTF_Font* font = nullptr;
+TTF_Font* bigFont = nullptr;
+bool gameOver = false;
 
 Player* player = nullptr;
 Ball* ball = nullptr;
@@ -47,7 +49,7 @@ bool initSDL()
     SDL_Log("SUCCESS!");
 
     SDL_Log("Creating player...");
-    player = new Player(1, 3, SDL_Rect{WINDOW_WIDTH / 2 - 150, WINDOW_HEIGHT - 20, 300, 20});
+    player = new Player(1, SDL_Rect{WINDOW_WIDTH / 2 - 150, WINDOW_HEIGHT - 20, 300, 20});
     if(!player)
     {
         printf("Failed to create player object.\n");
@@ -86,6 +88,15 @@ bool initSDL()
     if(!font)
     {
         SDL_Log("Failed to load font! TTF_Error: %s", TTF_GetError());
+        return false;
+    }
+    SDL_Log("SUCCESS!");
+
+    SDL_Log("Loading font...");
+    bigFont = TTF_OpenFont("../fonts/roboto-bold.ttf", 64); 
+    if(!bigFont)
+    {
+        SDL_Log("Failed to load bigFont! TTF_Error: %s", TTF_GetError());
         return false;
     }
     SDL_Log("SUCCESS!");
@@ -154,9 +165,14 @@ void handleMovement(float deltaTime)
 
     if(keystates[SDL_SCANCODE_R])
     {
-        level->reset(ball);
-        player->setLives(3);
-        isCatched = true;
+        if(gameOver)
+        {
+            level->setLevelNumber(0);
+            level->reset(ball);
+            player->setLives(3);
+            isCatched = true;
+            gameOver = false;
+        }
     }
 }
 
@@ -173,7 +189,6 @@ void loop()
         lastTime = currentTime;
         if(deltaTime > 0.05f) deltaTime = 0.016f;
 
-
         handleEvents(deltaTime);
 
         handleMovement(deltaTime);
@@ -183,17 +198,29 @@ void loop()
         SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
         SDL_RenderClear(renderer);
 
+        if(player->getLives() <= 0)
+        {
+            gameOver = true;
+            SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
+            SDL_RenderClear(renderer);
+            renderText(renderer, bigFont, "Game Over", WINDOW_WIDTH / 2 - 160, WINDOW_HEIGHT / 2 - 100);
+            renderText(renderer, font, "Press R to restart", WINDOW_WIDTH / 2 - 100, WINDOW_HEIGHT / 2 + 10);
+            renderText(renderer, font, "Press ESC to exit", WINDOW_WIDTH / 2 - 100, WINDOW_HEIGHT / 2 + 40);
+        }
 
-        level->draw(renderer);
-        level->removeBrick(ball->getRect(), *&ball, ball->getRect(), *&player);
+        else
+        {
+            level->draw(renderer);
+            level->removeBrick(ball->getRect(), *&ball, ball->getRect(), *&player);
 
-        player->render(renderer);
-        ball->draw(renderer);
-        ball->move(deltaTime, 0, 0, player->getRect(), isCatched);
+            player->render(renderer);
+            ball->draw(renderer);
+            ball->move(deltaTime, 0, 0, player->getRect(), isCatched, player);
+        }
 
         renderText(renderer, font, "Level: " + std::to_string(Level::getLevelNumber()), 10, 10);
-        renderText(renderer, font, "Broken bricks: " + std::to_string(player->getBlocksBreaked()), 10, 40);
-        
+        renderText(renderer, font, "Lives: " + std::to_string(player->getLives()), 10, 40);
+
         SDL_RenderPresent(renderer);
     }
 }

@@ -1,9 +1,10 @@
 #include "Player.hpp"
 #include "Settings.hpp"
 
+int Player::lives = 3;
 int Player::blocksBreaked = 0;
 
-Player::Player(int l, int li, const SDL_Rect &r) : level(l), lives(li), rect(r) 
+Player::Player(int l, const SDL_Rect &r) : level(l), rect(r) 
 {
     
 };

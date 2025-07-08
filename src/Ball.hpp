@@ -2,6 +2,8 @@
 
 #include <SDL2/SDL2_gfxPrimitives.h>
 
+class Player;
+
 class Ball 
 {
 private:
@@ -18,7 +20,7 @@ public:
     ~Ball();
 
     void draw(SDL_Renderer* renderer) const;
-    void move(float deltaTime, float dx, float dy, SDL_Rect playerRect, bool& isCatched);
+    void move(float deltaTime, float dx, float dy, SDL_Rect playerRect, bool& isCatched, Player*& player);
 
     SDL_Rect getRect() const; 
     int getX() const { return x; }

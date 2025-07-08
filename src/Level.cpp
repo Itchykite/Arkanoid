@@ -3,7 +3,7 @@
 #include "Settings.hpp"
 #include "Player.hpp"
 
-int Level::levelNumber = 0;
+int Level::levelNumber = 1;
 
 Uint32 generateColor()
 {
